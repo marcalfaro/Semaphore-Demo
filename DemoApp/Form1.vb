@@ -17,11 +17,12 @@ Public Class Form1
 
         'wait until all tasks are filled
         Console.WriteLine($"{ vbNewLine }Waiting 5secs to start...")
-        Await Task.Delay(20000)
+        Await Task.Delay(10000)
 
-        'release 3 tasks so other tasks can continue
-        Console.Write($"{ vbNewLine }Main thread calls Release(3) --> ")
-        ss.Release(3)
+        'release # tasks so other tasks can continue
+        Dim tasksToRelease As Integer = 3
+        Console.Write($"{ vbNewLine }Main thread calls Release({ tasksToRelease }) --> ")
+        ss.Release(tasksToRelease)
         Console.WriteLine($"{ ss.CurrentCount } tasks can enter the semaphore now.")
 
         'wait till all tasks are done
@@ -36,11 +37,21 @@ Public Class Form1
         ss.Wait()
 
         Console.WriteLine($"Task { Task.CurrentId } enters the semaphore.")
+        Try
 
-        'Really really slow and long procedure here
-        'Thread.Sleep(2000)
+            'Really really slow and long procedure here
+            'Thread.Sleep(2000)
+            Task.Delay(2000)
 
-        Console.WriteLine($"Task { Task.CurrentId } releases the semaphore; previous count: { ss.Release }.")
+        Catch ex As Exception
+
+        Finally
+            'When the task Is ready, release the semaphore. It Is vital to ALWAYS release the semaphore when we are ready, Or else we will end up with a Semaphore that Is forever locked.
+            'This Is why it Is important to do the Release within a try...finally clause; program execution may crash Or take a different path, this way you are guaranteed execution
+
+            Console.WriteLine($"Task { Task.CurrentId } releases the semaphore.")
+            ss.Release()
+        End Try
     End Sub
 
 End Class
